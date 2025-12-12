@@ -1,6 +1,9 @@
 package kr.co.ansandy.prompt_ev.entity;
 
 import jakarta.persistence.*;
+import kr.co.ansandy.prompt_ev.dto.PromptCreateRequest;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,7 +11,8 @@ import lombok.Setter;
 @Entity
 @Table(name = "prompts")
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class Prompt extends BaseEntity {
 
@@ -33,28 +37,20 @@ public class Prompt extends BaseEntity {
     @Column(name = "response_text", columnDefinition = "TEXT")
     private String responseText;
 
-    /** 목표 달성도 (1-5점) */
-    @Column(name = "goal_achievement")
-    private Integer goalAchievement;
-
-    /** 실행 성공 여부 */
-    @Column(name = "execution_success")
-    private Boolean executionSuccess;
-
-    /** 응답 품질 (1-5점) */
-    @Column(name = "response_quality")
-    private Integer responseQuality;
-
-    /** 효율성 (1-5점) */
-    @Column(name = "efficiency")
-    private Integer efficiency;
-
-    /** 재사용 가능성 (1-5점) */
-    @Column(name = "reusability")
-    private Integer reusability;
+    /** 평가 점수 */
+    @Embedded
+    private EvaluationScore evaluationScore;
 
     /** 자유 코멘트 */
     @Column(columnDefinition = "TEXT")
     private String comment;
+
+    public static Prompt from(PromptCreateRequest request){
+        return Prompt.builder()
+                .content(request.getContent())
+                .category(request.getCategory())
+                .aiModel(request.getAiModel())
+                .build();
+    }
 
 }

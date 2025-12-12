@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt 목록 - Prompt Evaluation System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Claude 색상 팔레트 */
+        :root {
+            --claude-bg: #1a1a1a;
+            --claude-surface: #2d2d2d;
+            --claude-border: #404040;
+            --claude-text: #e5e5e5;
+            --claude-text-muted: #a0a0a0;
+            --claude-accent: #cc785c;
+            --claude-accent-hover: #b86b4f;
+        }
+
+        body {
+            background-color: var(--claude-bg);
+            color: var(--claude-text);
+        }
+
+        .card {
+            background-color: var(--claude-surface);
+            border: 1px solid var(--claude-border);
+        }
+
+        .btn-primary {
+            background-color: var(--claude-accent);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--claude-accent-hover);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- 헤더 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-2">Prompt 목록</h1>
+            <p class="text-gray-400">저장된 프롬프트를 확인하고 평가하세요</p>
+        </div>
+
+        <!-- 필터 영역 -->
+        <div class="card rounded-lg p-6 mb-6">
+            <form th:action="@{/prompts}" method="get" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- 카테고리 필터 -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2">카테고리</label>
+                        <select name="category" class="w-full px-3 py-2 bg-[#1a1a1a] border border-[#404040] rounded-md text-white focus:outline-none focus:border-[#cc785c]">
+                            <option value="">전체</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat}"
+                                    th:text="${cat.description}"
+                                    th:selected="${filter.category == cat}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- 최소 점수 -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2">최소 만족도</label>
+                        <input type="number" name="minSatisfaction"
+                               th:value="${filter.minSatisfaction}"
+                               min="0" max="10"
+                               placeholder="0-10"
+                               class="w-full px-3 py-2 bg-[#1a1a1a] border border-[#404040] rounded-md text-white focus:outline-none focus:border-[#cc785c]">
+                    </div>
+
+                    <!-- 최대 점수 -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2">최대 만족도</label>
+                        <input type="number" name="maxSatisfaction"
+                               th:value="${filter.maxSatisfaction}"
+                               min="0" max="10"
+                               placeholder="0-10"
+                               class="w-full px-3 py-2 bg-[#1a1a1a] border border-[#404040] rounded-md text-white focus:outline-none focus:border-[#cc785c]">
+                    </div>
+
+                    <!-- 페이지 크기 -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2">페이지 크기</label>
+                        <select name="size" class="w-full px-3 py-2 bg-[#1a1a1a] border border-[#404040] rounded-md text-white focus:outline-none focus:border-[#cc785c]">
+                            <option th:each="size : ${pageSizes}"
+                                    th:value="${size}"
+                                    th:text="${size} + '개'"
+                                    th:selected="${filter.size == size}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <a th:href="@{/prompts}" class="px-4 py-2 bg-[#404040] text-white rounded-md hover:bg-[#4a4a4a] transition">
+                        초기화
+                    </a>
+                    <button type="submit" class="btn-primary px-4 py-2 text-white rounded-md hover:bg-[#b86b4f] transition">
+                        검색
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 테이블 -->
+        <div class="card rounded-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-[#1a1a1a] border-b border-[#404040]">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">프롬프트</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">카테고리</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">AI 모델</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">만족도</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">생성일</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#404040]">
+                        <tr th:if="${#lists.isEmpty(prompts)}" class="hover:bg-[#333333] transition">
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-400">
+                                저장된 프롬프트가 없습니다.
+                            </td>
+                        </tr>
+                        <tr th:each="prompt : ${prompts}" class="hover:bg-[#333333] transition cursor-pointer">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm" th:text="${prompt.id}"></td>
+                            <td class="px-6 py-4 text-sm">
+                                <div class="max-w-md truncate" th:text="${prompt.content}"></div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span th:if="${prompt.category}"
+                                      class="px-2 py-1 text-xs rounded-full bg-[#cc785c] bg-opacity-20 text-[#cc785c]"
+                                      th:text="${prompt.categoryDescription}">
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400" th:text="${prompt.aiModel}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span th:if="${prompt.overallSatisfaction != null}"
+                                      class="font-semibold"
+                                      th:classappend="${prompt.overallSatisfaction >= 7} ? 'text-green-400' : (${prompt.overallSatisfaction >= 4} ? 'text-yellow-400' : 'text-red-400')"
+                                      th:text="${prompt.overallSatisfaction} + '/10'">
+                                </span>
+                                <span th:if="${prompt.overallSatisfaction == null}" class="text-gray-500">-</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400"
+                                th:text="${#temporals.format(prompt.createdAt, 'yyyy-MM-dd HH:mm')}">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <div th:if="${page.totalPages > 1}" class="mt-6 flex items-center justify-between">
+            <div class="text-sm text-gray-400">
+                총 <span th:text="${page.totalElements}"></span>개 중
+                <span th:text="${page.number * page.size + 1}"></span>-<span th:text="${#numbers.min(page.number * page.size + page.size, page.totalElements)}"></span>
+            </div>
+
+            <div class="flex space-x-2">
+                <!-- 이전 페이지 -->
+                <a th:if="${!page.first}"
+                   th:href="@{/prompts(page=${page.number - 1}, size=${filter.size}, category=${filter.category}, minSatisfaction=${filter.minSatisfaction}, maxSatisfaction=${filter.maxSatisfaction})}"
+                   class="px-3 py-2 bg-[#404040] text-white rounded-md hover:bg-[#4a4a4a] transition">
+                    이전
+                </a>
+                <span th:if="${page.first}" class="px-3 py-2 bg-[#2d2d2d] text-gray-600 rounded-md cursor-not-allowed">
+                    이전
+                </span>
+
+                <!-- 페이지 번호 -->
+                <div class="flex space-x-1">
+                    <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+                        <a th:if="${i >= page.number - 2 && i <= page.number + 2}"
+                           th:href="@{/prompts(page=${i}, size=${filter.size}, category=${filter.category}, minSatisfaction=${filter.minSatisfaction}, maxSatisfaction=${filter.maxSatisfaction})}"
+                           th:classappend="${i == page.number} ? 'bg-[#cc785c] text-white' : 'bg-[#404040] text-white hover:bg-[#4a4a4a]'"
+                           class="px-3 py-2 rounded-md transition"
+                           th:text="${i + 1}">
+                        </a>
+                    </th:block>
+                </div>
+
+                <!-- 다음 페이지 -->
+                <a th:if="${!page.last}"
+                   th:href="@{/prompts(page=${page.number + 1}, size=${filter.size}, category=${filter.category}, minSatisfaction=${filter.minSatisfaction}, maxSatisfaction=${filter.maxSatisfaction})}"
+                   class="px-3 py-2 bg-[#404040] text-white rounded-md hover:bg-[#4a4a4a] transition">
+                    다음
+                </a>
+                <span th:if="${page.last}" class="px-3 py-2 bg-[#2d2d2d] text-gray-600 rounded-md cursor-not-allowed">
+                    다음
+                </span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -20,12 +20,6 @@ public class PromptController {
 
     @PostMapping
     public ResponseEntity<PromptResponse> createPrompt(@RequestBody PromptCreateRequest request) {
-        Prompt prompt = new Prompt();
-        prompt.setContent(request.getContent());
-        prompt.setCategory(request.getCategory());
-        prompt.setAiModel(request.getAiModel());
-
-        Prompt savedPrompt = promptService.savePrompt(prompt);
-        return ResponseEntity.ok(new PromptResponse(savedPrompt));
+        return ResponseEntity.ok(promptService.savePrompt(request));
     }
 }

@@ -93,18 +93,24 @@ The system uses a hierarchical entity structure with `BaseEntity` providing audi
 ### Completed (Phase 1 - MVP in progress)
 - ✅ Basic project structure and Spring Boot setup
 - ✅ SQLite database integration with Hibernate
-- ✅ BaseEntity with JPA auditing
-- ✅ Prompt entity (partial - needs relationships)
-- ✅ PromptRepository interface
+- ✅ BaseEntity with JPA auditing (timestamps stored as TEXT for SQLite)
+- ✅ Prompt entity (denormalized - includes execution and evaluation fields)
+- ✅ PromptRepository with JpaSpecificationExecutor for dynamic queries
+- ✅ PromptService with pagination and filtering logic
+- ✅ REST API: POST /api/prompts (create prompt)
+- ✅ View Controller: GET /prompts (list with filters)
+- ✅ Thymeleaf template for prompt list (Claude dark theme)
+- ✅ Claude Code webhook integration (auto-save prompts with category classification)
+- ✅ DTOs: PromptCreateRequest, PromptResponse, PromptFilterRequest, PromptListResponse
 - ✅ Health check endpoint at `/`
 
-### To Be Implemented (see PROJECT_PLAN.md Phase 1)
-- Remaining entities: PromptExecution, UserEvaluation, AIAnalysis
-- Entity relationships (@OneToMany, @ManyToOne mappings)
-- Service layer with business logic
-- Controller endpoints for CRUD operations
-- Thymeleaf templates for UI
-- Validation annotations on entities
+### To Be Implemented (see PROJECT_PLAN.md)
+- Remaining entities: PromptExecution, UserEvaluation, AIAnalysis (currently denormalized in Prompt)
+- Entity relationships (@OneToMany, @ManyToOne mappings) - requires refactoring current Prompt entity
+- Prompt detail/edit page for updating evaluation scores and comments
+- Validation annotations on DTOs/entities
+- AI API integration (Phase 2)
+- Statistics dashboard (Phase 3)
 
 ## Development Guidelines
 
@@ -121,11 +127,28 @@ Services should handle:
 - Coordination between repositories
 - Integration with external AI APIs (Phase 2)
 
+**Transaction Strategy**:
+- Use class-level `@Transactional(readOnly = true)` as default
+- Override with method-level `@Transactional` for write operations
+- This optimizes read-heavy operations
+
+**Filtering Pattern**:
+- Use JPA Specification for dynamic queries (see PromptService.createSpecification)
+- Build predicates conditionally based on filter criteria
+- Combine with Pageable for pagination support
+
 ### Controller Design
+**Controller Separation Pattern**:
+- **REST Controllers** (`@RestController`): `/api/*` paths for API endpoints
+- **View Controllers** (`@Controller`): Other paths for Thymeleaf rendering
+- Keep controllers separate by concern (API vs View), not by feature
+
+**Best Practices**:
 - Use RESTful conventions for API endpoints
 - Return proper HTTP status codes
 - Use DTOs for request/response payloads (not entities directly)
-- Thymeleaf for server-side rendered pages
+- Use `@ModelAttribute` for query parameters in view controllers
+- Convert entities to DTOs before passing to Thymeleaf
 
 ## Testing Strategy
 
@@ -148,9 +171,47 @@ Services should handle:
 - Phase 3: Statistics dashboard and insights
 - Phase 4: Templates, version control, advanced search
 
+## Claude Code Webhook Integration
+
+This project includes a unique Claude Code hook that automatically captures and saves prompts:
+
+**Hook Configuration** (`.claude/settings.local.json`):
+- Event: `UserPromptSubmit` - triggers when user submits a prompt to Claude
+- Script: `.claude/hooks/save-prompt.py`
+- Action: POSTs to `/api/prompts` with auto-classified category
+
+**Category Auto-Classification**:
+The Python script analyzes prompt text using keyword matching:
+- **BUG_FIX**: '버그', 'bug', 'fix', '오류' etc.
+- **TEST**: '테스트', 'test', 'unit test' etc.
+- **REFACTORING**: '리팩토링', 'refactor', '개선' etc.
+- **FEATURE**: '기능', 'feature', 'add', '구현' etc.
+- **DOCUMENTATION**: '문서', 'docs', 'readme' etc.
+- **ETC**: Default when no keywords match
+
+Priority order: BUG_FIX > TEST > REFACTORING > FEATURE > DOCUMENTATION > ETC
+
+**Hook Behavior**:
+- Runs silently in background (2s timeout)
+- Network errors are ignored (doesn't interrupt Claude)
+- Empty prompts are skipped
+- Always sets aiModel to "claude-sonnet-4-5"
+
+## Important Data Model Note
+
+**Current vs Planned Schema**:
+The current `Prompt` entity is **denormalized** - it combines fields that PROJECT_PLAN.md separates into:
+- Prompt (content, category)
+- PromptExecution (aiModel, responseText)
+- UserEvaluation (all evaluation scores)
+
+This simplified structure is suitable for MVP but will require refactoring when implementing the full normalized schema with relationships.
+
 ## Important Project Files
 
 - **PROJECT_PLAN.md**: Comprehensive product requirements, data models, and development roadmap
 - **build.gradle**: Project dependencies and build configuration
 - **application.yaml**: Database and JPA configuration
 - **prompt_ev.db**: SQLite database file (gitignored)
+- **.claude/hooks/save-prompt.py**: Auto-save hook for Claude Code integration
+- **.claude/settings.local.json**: Hook configuration

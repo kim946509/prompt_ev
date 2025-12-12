@@ -11,22 +11,49 @@ public class PromptListResponse {
 
     private final Long id;
     private final String content;
+    private final String contentPreview;  // 100자 미리보기
     private final PromptCategory category;
     private final String aiModel;
+    private final String responseText;
+
+    // 평가 점수
+    private final Integer goalAchievement;
+    private final Boolean executionSuccess;
+    private final Integer responseQuality;
+    private final Integer efficiency;
+    private final Integer reusability;
     private final Integer overallSatisfaction;
+
     private final String comment;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
     public PromptListResponse(Prompt prompt) {
         this.id = prompt.getId();
-        this.content = truncateContent(prompt.getContent());
+        this.content = prompt.getContent();  // 전체 내용
+        this.contentPreview = truncateContent(prompt.getContent());  // 미리보기
         this.category = prompt.getCategory();
         this.aiModel = prompt.getAiModel();
-        this.overallSatisfaction = prompt.getEvaluationScore() != null
-                ? prompt.getEvaluationScore().getOverallSatisfaction()
-                : null;
-        this.comment = truncateComment(prompt.getComment());
+        this.responseText = prompt.getResponseText();
+
+        // 평가 점수 (null-safe)
+        if (prompt.getEvaluationScore() != null) {
+            this.goalAchievement = prompt.getEvaluationScore().getGoalAchievement();
+            this.executionSuccess = prompt.getEvaluationScore().getExecutionSuccess();
+            this.responseQuality = prompt.getEvaluationScore().getResponseQuality();
+            this.efficiency = prompt.getEvaluationScore().getEfficiency();
+            this.reusability = prompt.getEvaluationScore().getReusability();
+            this.overallSatisfaction = prompt.getEvaluationScore().getOverallSatisfaction();
+        } else {
+            this.goalAchievement = null;
+            this.executionSuccess = null;
+            this.responseQuality = null;
+            this.efficiency = null;
+            this.reusability = null;
+            this.overallSatisfaction = null;
+        }
+
+        this.comment = prompt.getComment();
         this.createdAt = prompt.getCreatedAt();
         this.updatedAt = prompt.getUpdatedAt();
     }
@@ -42,19 +69,6 @@ public class PromptListResponse {
             return content;
         }
         return content.substring(0, 100) + "...";
-    }
-
-    /**
-     * 코멘트를 50자로 제한
-     */
-    private String truncateComment(String comment) {
-        if (comment == null) {
-            return null;
-        }
-        if (comment.length() <= 50) {
-            return comment;
-        }
-        return comment.substring(0, 50) + "...";
     }
 
     /**

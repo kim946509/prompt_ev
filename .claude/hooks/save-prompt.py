@@ -10,8 +10,8 @@ import urllib.request
 import urllib.error
 
 # Spring Boot API URL
-API_URL = "http://localhost:8080/api/prompts"
-
+API_URL = "http://localhost:8090/api/prompts"
+PROJECT_NAME = "prompt_ev"
 def classify_category(prompt_text):
     """
        카테고리:
@@ -100,6 +100,7 @@ def main():
     payload = {
         "content": prompt_text,
         "category": category,
+        "project": PROJECT_NAME,
         "aiModel": "claude-sonnet-4-5"
     }
 

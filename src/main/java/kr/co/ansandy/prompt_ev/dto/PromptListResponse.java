@@ -13,6 +13,7 @@ public class PromptListResponse {
     private final String content;
     private final String contentPreview;  // 100자 미리보기
     private final PromptCategory category;
+    private final String project;
     private final String aiModel;
     private final String responseText;
 
@@ -33,6 +34,7 @@ public class PromptListResponse {
         this.content = prompt.getContent();  // 전체 내용
         this.contentPreview = truncateContent(prompt.getContent());  // 미리보기
         this.category = prompt.getCategory();
+        this.project = prompt.getProject();
         this.aiModel = prompt.getAiModel();
         this.responseText = prompt.getResponseText();
 

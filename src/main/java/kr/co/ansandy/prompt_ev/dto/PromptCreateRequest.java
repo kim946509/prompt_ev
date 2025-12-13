@@ -12,5 +12,6 @@ public class PromptCreateRequest {
 
     private String content;
     private PromptCategory category;
+    private String project;
     private String aiModel;
 }

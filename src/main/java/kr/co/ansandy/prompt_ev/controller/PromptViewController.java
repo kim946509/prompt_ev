@@ -10,19 +10,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/prompts")
 @RequiredArgsConstructor
 public class PromptViewController {
 
     private final PromptService promptService;
 
     /**
-     * 프롬프트 목록 페이지
+     * 프롬프트 목록 페이지 (홈화면)
      */
-    @GetMapping
+    @GetMapping({"/", "/prompts"})
     public String listPrompts(
             @ModelAttribute PromptFilterRequest filterRequest,
             Model model

@@ -29,6 +29,10 @@ public class Prompt extends BaseEntity {
     @Column(length = 50)
     private PromptCategory category;
 
+    /** 프로젝트 이름 */
+    @Column(length = 200)
+    private String project;
+
     /** 사용한 AI 모델 (예: GPT-4, Claude-3.5) */
     @Column(name = "ai_model", length = 100)
     private String aiModel;
@@ -49,6 +53,7 @@ public class Prompt extends BaseEntity {
         return Prompt.builder()
                 .content(request.getContent())
                 .category(request.getCategory())
+                .project(request.getProject())
                 .aiModel(request.getAiModel())
                 .build();
     }

@@ -82,7 +82,7 @@
 
         <!-- 필터 영역 -->
         <div class="card rounded-lg p-6 mb-6">
-            <form th:action="@{/prompts}" method="get" class="space-y-4">
+            <form th:action="@{/}" method="get" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <!-- 카테고리 필터 -->
                     <div>
@@ -131,7 +131,7 @@
                 </div>
 
                 <div class="flex justify-end space-x-3">
-                    <a th:href="@{/prompts}" class="px-4 py-2 bg-[#404040] text-white rounded-md hover:bg-[#4a4a4a] transition">
+                    <a th:href="@{/}" class="px-4 py-2 bg-[#404040] text-white rounded-md hover:bg-[#4a4a4a] transition">
                         초기화
                     </a>
                     <button type="submit" class="btn-primary px-4 py-2 text-white rounded-md hover:bg-[#b86b4f] transition">
@@ -148,9 +148,9 @@
                     <thead class="bg-[#1a1a1a] border-b border-[#404040]">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">프로젝트</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">프롬프트</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">카테고리</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">AI 모델</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">만족도</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">생성일</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">상세보기</th>
@@ -164,11 +164,12 @@
                         </tr>
                         <tr th:each="prompt : ${prompts}" class="hover:bg-[#333333] transition">
                             <td class="px-6 py-4 whitespace-nowrap text-sm" th:text="${prompt.id}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400" th:text="${prompt.project}"></td>
                             <td class="px-6 py-4 text-sm">
                                 <div class="max-w-md">
                                     <div th:id="'prompt-' + ${prompt.id}" class="prompt-collapsed" th:text="${prompt.content}"></div>
                                     <button th:if="${#strings.length(prompt.content) > 100}"
-                                            th:onclick="'togglePrompt(' + ${prompt.id} + ')'"
+                                            th:attr="onclick='togglePrompt(' + ${prompt.id} + ')'"
                                             class="mt-1 text-xs text-[#cc785c] hover:text-[#b86b4f] flex items-center">
                                         <span th:id="'toggle-icon-' + ${prompt.id}">▼ 더보기</span>
                                     </button>
@@ -180,7 +181,6 @@
                                       th:text="${prompt.categoryDescription}">
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400" th:text="${prompt.aiModel}"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <span th:if="${prompt.overallSatisfaction != null}"
                                       class="font-semibold"
@@ -197,6 +197,7 @@
                                         th:attr="data-id=${prompt.id},
                                                  data-content=${prompt.content},
                                                  data-category=${prompt.categoryDescription},
+                                                 data-project=${prompt.project},
                                                  data-ai-model=${prompt.aiModel},
                                                  data-created-at=${#temporals.format(prompt.createdAt, 'yyyy-MM-dd HH:mm')},
                                                  data-response-text=${prompt.responseText},
@@ -224,13 +225,13 @@
         <div th:if="${page.totalPages > 1}" class="mt-6 flex items-center justify-between">
             <div class="text-sm text-gray-400">
                 총 <span th:text="${page.totalElements}"></span>개 중
-                <span th:text="${page.number * page.size + 1}"></span>-<span th:text="${#numbers.min(page.number * page.size + page.size, page.totalElements)}"></span>
+                <span th:text="${page.number * page.size + 1}"></span>-<span th:text="${(page.number * page.size + page.size) < page.totalElements ? (page.number * page.size + page.size) : page.totalElements}"></span>
             </div>
 
             <div class="flex space-x-2">
                 <!-- 이전 페이지 -->
                 <a th:if="${!page.first}"
-                   th:href="@{/prompts(page=${page.number - 1}, size=${filter.size}, category=${filter.category}, minSatisfaction=${filter.minSatisfaction}, maxSatisfaction=${filter.maxSatisfaction})}"
+                   th:href="@{/(page=${page.number - 1}, size=${filter.size}, category=${filter.category}, minSatisfaction=${filter.minSatisfaction}, maxSatisfaction=${filter.maxSatisfaction})}"
                    class="px-3 py-2 bg-[#404040] text-white rounded-md hover:bg-[#4a4a4a] transition">
                     이전
                 </a>
@@ -242,7 +243,7 @@
                 <div class="flex space-x-1">
                     <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
                         <a th:if="${i >= page.number - 2 && i <= page.number + 2}"
-                           th:href="@{/prompts(page=${i}, size=${filter.size}, category=${filter.category}, minSatisfaction=${filter.minSatisfaction}, maxSatisfaction=${filter.maxSatisfaction})}"
+                           th:href="@{/(page=${i}, size=${filter.size}, category=${filter.category}, minSatisfaction=${filter.minSatisfaction}, maxSatisfaction=${filter.maxSatisfaction})}"
                            th:classappend="${i == page.number} ? 'bg-[#cc785c] text-white' : 'bg-[#404040] text-white hover:bg-[#4a4a4a]'"
                            class="px-3 py-2 rounded-md transition"
                            th:text="${i + 1}">
@@ -252,7 +253,7 @@
 
                 <!-- 다음 페이지 -->
                 <a th:if="${!page.last}"
-                   th:href="@{/prompts(page=${page.number + 1}, size=${filter.size}, category=${filter.category}, minSatisfaction=${filter.minSatisfaction}, maxSatisfaction=${filter.maxSatisfaction})}"
+                   th:href="@{/(page=${page.number + 1}, size=${filter.size}, category=${filter.category}, minSatisfaction=${filter.minSatisfaction}, maxSatisfaction=${filter.maxSatisfaction})}"
                    class="px-3 py-2 bg-[#404040] text-white rounded-md hover:bg-[#4a4a4a] transition">
                     다음
                 </a>
@@ -284,6 +285,10 @@
                         <div>
                             <span class="text-sm text-gray-400">카테고리</span>
                             <p id="modal-category" class="text-lg"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-400">프로젝트</span>
+                            <p id="modal-project" class="text-lg"></p>
                         </div>
                         <div>
                             <span class="text-sm text-gray-400">AI 모델</span>
@@ -379,6 +384,7 @@
             // 기본 정보
             document.getElementById('modal-id').textContent = dataset.id || '-';
             document.getElementById('modal-category').textContent = dataset.category || '-';
+            document.getElementById('modal-project').textContent = dataset.project || '-';
             document.getElementById('modal-aiModel').textContent = dataset.aiModel || '-';
             document.getElementById('modal-createdAt').textContent = dataset.createdAt || '-';
             document.getElementById('modal-content').textContent = dataset.content || '';
@@ -391,22 +397,27 @@
                 document.getElementById('modal-response-section').classList.add('hidden');
             }
 
-            // 평가 점수
-            const hasScores = dataset.goalAchievement !== 'null' || dataset.responseQuality !== 'null';
+            // 평가 점수 - 값이 있는지 체크하는 헬퍼 함수
+            const hasValue = (value) => value && value !== 'null' && value !== 'undefined';
+
+            const hasScores = hasValue(dataset.goalAchievement) || hasValue(dataset.responseQuality) ||
+                             hasValue(dataset.efficiency) || hasValue(dataset.reusability) ||
+                             hasValue(dataset.executionSuccess) || hasValue(dataset.overallSatisfaction);
+
             if (hasScores) {
                 document.getElementById('modal-scores-section').classList.remove('hidden');
                 document.getElementById('modal-goalAchievement').textContent =
-                    dataset.goalAchievement !== 'null' ? dataset.goalAchievement + '/10' : '-';
+                    hasValue(dataset.goalAchievement) ? dataset.goalAchievement + '/10' : '';
                 document.getElementById('modal-responseQuality').textContent =
-                    dataset.responseQuality !== 'null' ? dataset.responseQuality + '/10' : '-';
+                    hasValue(dataset.responseQuality) ? dataset.responseQuality + '/10' : '';
                 document.getElementById('modal-efficiency').textContent =
-                    dataset.efficiency !== 'null' ? dataset.efficiency + '/10' : '-';
+                    hasValue(dataset.efficiency) ? dataset.efficiency + '/10' : '';
                 document.getElementById('modal-reusability').textContent =
-                    dataset.reusability !== 'null' ? dataset.reusability + '/10' : '-';
+                    hasValue(dataset.reusability) ? dataset.reusability + '/10' : '';
                 document.getElementById('modal-executionSuccess').textContent =
-                    dataset.executionSuccess !== 'null' ? (dataset.executionSuccess === 'true' ? '✓ 성공' : '✗ 실패') : '-';
+                    hasValue(dataset.executionSuccess) ? (dataset.executionSuccess === 'true' ? '✓ 성공' : '✗ 실패') : '';
                 document.getElementById('modal-overallSatisfaction').textContent =
-                    dataset.overallSatisfaction !== 'null' ? dataset.overallSatisfaction + '/10' : '-';
+                    hasValue(dataset.overallSatisfaction) ? dataset.overallSatisfaction + '/10' : '';
             } else {
                 document.getElementById('modal-scores-section').classList.add('hidden');
             }

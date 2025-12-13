@@ -1,7 +1,9 @@
+server:
+  port: 8090
+
 spring:
   application:
     name: prompt_ev
-
   # SQLite Database Configuration
   datasource:
     url: jdbc:sqlite:prompt_ev.db

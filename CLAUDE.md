@@ -14,6 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Build and Run
+
+#### Local Development
 ```bash
 # Build the project
 ./gradlew build
@@ -26,6 +28,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Clean build
 ./gradlew clean build
+```
+
+#### Docker
+```bash
+# Build and run with Docker Compose (recommended)
+docker-compose up -d
+
+# Build Docker image manually
+docker build -t prompt-ev:latest .
+
+# Run Docker container manually
+docker run -d -p 18080:8080 -v ./data:/app/data --name prompt-evaluation prompt-ev:latest
+
+# View logs
+docker-compose logs -f
+# or
+docker logs -f prompt-evaluation
+
+# Stop and remove
+docker-compose down
+# or
+docker stop prompt-evaluation && docker rm prompt-evaluation
 ```
 
 ### Testing
@@ -207,11 +231,33 @@ The current `Prompt` entity is **denormalized** - it combines fields that PROJEC
 
 This simplified structure is suitable for MVP but will require refactoring when implementing the full normalized schema with relationships.
 
+## Docker Configuration
+
+The project is fully containerized for easy deployment and distribution:
+
+**Docker Setup**:
+- **Dockerfile**: Multi-stage build using Gradle wrapper and Eclipse Temurin JDK 21
+- **docker-compose.yml**: Orchestrates the application with volume mounting for data persistence
+- **Port**: Host port 18080 maps to container port 8080 (configurable)
+- **Data Persistence**: SQLite database persisted in `./data/prompt_ev.db` via Docker volume
+
+**Container Details**:
+- Base image: `eclipse-temurin:21-jre-jammy` (runtime stage)
+- Build image: `eclipse-temurin:21-jdk-jammy` (build stage)
+- Non-root user: `spring` (for security)
+- Health check: Enabled with 30s interval on root endpoint
+- Database location: `/app/data/prompt_ev.db` (inside container)
+
 ## Important Project Files
 
+- **README.md**: User-facing documentation with setup and usage instructions
 - **PROJECT_PLAN.md**: Comprehensive product requirements, data models, and development roadmap
 - **build.gradle**: Project dependencies and build configuration
 - **application.yaml**: Database and JPA configuration
-- **prompt_ev.db**: SQLite database file (gitignored)
+- **Dockerfile**: Docker image build configuration (multi-stage)
+- **docker-compose.yml**: Docker Compose orchestration configuration
+- **.dockerignore**: Files excluded from Docker build context
+- **prompt_ev.db**: SQLite database file (local development, gitignored)
+- **data/prompt_ev.db**: SQLite database file (Docker deployment, gitignored)
 - **.claude/hooks/save-prompt.py**: Auto-save hook for Claude Code integration
 - **.claude/settings.local.json**: Hook configuration

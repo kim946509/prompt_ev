@@ -35,7 +35,7 @@ public class PromptService {
     }
 
     /**
-     * 프롬프트 업데이트 (AI 응답, 평가 점수, 코멘트)
+     * 프롬프트 업데이트 (카테고리, AI 응답, 평가 점수, 코멘트)
      *
      * @param id 프롬프트 ID
      * @param request 업데이트할 데이터
@@ -47,6 +47,7 @@ public class PromptService {
                 .orElseThrow(() -> new IllegalArgumentException("프롬프트를 찾을 수 없습니다. ID: " + id));
 
         prompt.update(
+                request.getCategory(),
                 request.getResponseText(),
                 request.getComment(),
                 request.toEvaluationScore()

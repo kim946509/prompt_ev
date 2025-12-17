@@ -10,7 +10,7 @@ import urllib.request
 import urllib.error
 
 # Spring Boot API URL
-API_URL = "http://localhost:8090/api/prompts"
+API_URL = "http://localhost:18080/api/prompts"
 PROJECT_NAME = "prompt_ev"
 def classify_category(prompt_text):
     """

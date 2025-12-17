@@ -62,7 +62,8 @@ public class Prompt extends BaseEntity {
      * 프롬프트 정보를 업데이트합니다.
      * 전달된 값으로 덮어쓰기를 수행하며, null 값도 그대로 저장됩니다.
      */
-    public void update(String responseText, String comment, EvaluationScore evaluationScore) {
+    public void update(PromptCategory category, String responseText, String comment, EvaluationScore evaluationScore) {
+        this.category = category;
         this.responseText = responseText;
         this.comment = comment;
         this.evaluationScore = evaluationScore;

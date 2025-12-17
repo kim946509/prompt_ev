@@ -1,6 +1,7 @@
 package kr.co.ansandy.prompt_ev.dto;
 
 import kr.co.ansandy.prompt_ev.entity.EvaluationScore;
+import kr.co.ansandy.prompt_ev.entity.PromptCategory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,6 +10,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class PromptUpdateRequest {
+
+    /** 프롬프트 카테고리 */
+    private PromptCategory category;
 
     /** AI 응답 결과 */
     private String responseText;

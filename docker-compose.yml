@@ -8,16 +8,18 @@ services:
     image: prompt-ev:latest
     container_name: prompt-evaluation
     ports:
-      - "18080:8080"
+      - "18080:18080"
     volumes:
       # Mount data directory to persist SQLite database
       - ./data:/app/data
     environment:
       # Optional: Override default settings
       - SPRING_PROFILES_ACTIVE=prod
+      # Set timezone to Korea Standard Time
+      - TZ=Asia/Seoul
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      test: ["CMD", "curl", "-f", "http://localhost:18080/"]
       interval: 30s
       timeout: 3s
       retries: 3

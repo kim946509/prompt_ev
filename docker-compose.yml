@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  prompt-ev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: prompt-ev:latest
+    container_name: prompt-evaluation
+    ports:
+      - "18080:8080"
+    volumes:
+      # Mount data directory to persist SQLite database
+      - ./data:/app/data
+    environment:
+      # Optional: Override default settings
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+# Optional: Create named volume instead of bind mount
+# volumes:
+#   prompt-data:

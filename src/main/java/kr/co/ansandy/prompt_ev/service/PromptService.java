@@ -5,6 +5,7 @@ import kr.co.ansandy.prompt_ev.dto.PromptCreateRequest;
 import kr.co.ansandy.prompt_ev.dto.PromptFilterRequest;
 import kr.co.ansandy.prompt_ev.dto.PromptListResponse;
 import kr.co.ansandy.prompt_ev.dto.PromptResponse;
+import kr.co.ansandy.prompt_ev.dto.PromptUpdateRequest;
 import kr.co.ansandy.prompt_ev.entity.Prompt;
 import kr.co.ansandy.prompt_ev.repository.PromptRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,27 @@ public class PromptService {
     }
 
     /**
+     * 프롬프트 업데이트 (AI 응답, 평가 점수, 코멘트)
+     *
+     * @param id 프롬프트 ID
+     * @param request 업데이트할 데이터
+     * @return 업데이트된 프롬프트 DTO
+     */
+    @Transactional
+    public PromptResponse updatePrompt(Long id, PromptUpdateRequest request) {
+        Prompt prompt = promptRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("프롬프트를 찾을 수 없습니다. ID: " + id));
+
+        prompt.update(
+                request.getResponseText(),
+                request.getComment(),
+                request.toEvaluationScore()
+        );
+
+        return new PromptResponse(prompt);
+    }
+
+    /**
      * 프롬프트 목록 조회 (페이지네이션 + 필터링)
      *
      * @param filterRequest 필터 조건 및 페이지 정보
@@ -53,6 +75,19 @@ public class PromptService {
         // Entity 조회 후 DTO로 변환
         Page<Prompt> promptPage = promptRepository.findAll(spec, pageable);
         return promptPage.map(PromptListResponse::new);
+    }
+
+    /**
+     * 프롬프트 삭제
+     *
+     * @param id 삭제할 프롬프트 ID
+     */
+    @Transactional
+    public void deletePrompt(Long id) {
+        Prompt prompt = promptRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("프롬프트를 찾을 수 없습니다. ID: " + id));
+
+        promptRepository.delete(prompt);
     }
 
     /**

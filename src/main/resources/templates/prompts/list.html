@@ -153,7 +153,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">카테고리</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">만족도</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">생성일</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">상세보기</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">작업</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#404040]">
@@ -193,27 +193,36 @@
                                 th:text="${#temporals.format(prompt.createdAt, 'yyyy-MM-dd HH:mm')}">
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                <button onclick="openModal(this)"
-                                        th:attr="data-id=${prompt.id},
-                                                 data-content=${prompt.content},
-                                                 data-category=${prompt.categoryDescription},
-                                                 data-project=${prompt.project},
-                                                 data-ai-model=${prompt.aiModel},
-                                                 data-created-at=${#temporals.format(prompt.createdAt, 'yyyy-MM-dd HH:mm')},
-                                                 data-response-text=${prompt.responseText},
-                                                 data-goal-achievement=${prompt.goalAchievement},
-                                                 data-execution-success=${prompt.executionSuccess},
-                                                 data-response-quality=${prompt.responseQuality},
-                                                 data-efficiency=${prompt.efficiency},
-                                                 data-reusability=${prompt.reusability},
-                                                 data-overall-satisfaction=${prompt.overallSatisfaction},
-                                                 data-comment=${prompt.comment}"
-                                        class="text-[#cc785c] hover:text-[#b86b4f] transition"
-                                        title="상세보기">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
-                                    </svg>
-                                </button>
+                                <div class="flex items-center justify-center space-x-2">
+                                    <button onclick="openModal(this)"
+                                            th:attr="data-id=${prompt.id},
+                                                     data-content=${prompt.content},
+                                                     data-category=${prompt.categoryDescription},
+                                                     data-project=${prompt.project},
+                                                     data-ai-model=${prompt.aiModel},
+                                                     data-created-at=${#temporals.format(prompt.createdAt, 'yyyy-MM-dd HH:mm')},
+                                                     data-response-text=${prompt.responseText},
+                                                     data-goal-achievement=${prompt.goalAchievement},
+                                                     data-execution-success=${prompt.executionSuccess},
+                                                     data-response-quality=${prompt.responseQuality},
+                                                     data-efficiency=${prompt.efficiency},
+                                                     data-reusability=${prompt.reusability},
+                                                     data-overall-satisfaction=${prompt.overallSatisfaction},
+                                                     data-comment=${prompt.comment}"
+                                            class="text-[#cc785c] hover:text-[#b86b4f] transition"
+                                            title="상세보기">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                                        </svg>
+                                    </button>
+                                    <button th:attr="onclick='deletePrompt(' + ${prompt.id} + ')'"
+                                            class="text-red-400 hover:text-red-300 transition"
+                                            title="삭제">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -307,54 +316,66 @@
                     </div>
 
                     <!-- AI 응답 -->
-                    <div id="modal-response-section" class="hidden">
+                    <div id="modal-response-section">
                         <span class="text-sm text-gray-400">AI 응답</span>
-                        <div id="modal-responseText" class="mt-2 p-4 bg-[#1a1a1a] rounded-lg whitespace-pre-wrap"></div>
+                        <textarea id="edit-responseText" class="mt-2 w-full px-4 py-3 bg-[#1a1a1a] border border-[#404040] rounded-lg text-white" rows="6" placeholder="AI 응답 내용을 입력하세요"></textarea>
                     </div>
 
                     <!-- 평가 점수 -->
-                    <div id="modal-scores-section" class="hidden">
+                    <div id="modal-scores-section">
                         <span class="text-sm text-gray-400 block mb-3">평가 점수</span>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <div class="bg-[#1a1a1a] p-4 rounded-lg">
-                                <p class="text-xs text-gray-400 mb-1">목표 달성도</p>
-                                <p id="modal-goalAchievement" class="text-2xl font-bold text-[#cc785c]">-</p>
+                                <p class="text-xs text-gray-400 mb-2">목표 달성도 (1-10점)</p>
+                                <input type="number" id="edit-goalAchievement" class="w-full px-3 py-2 bg-[#2d2d2d] border border-[#404040] rounded-md text-white" min="1" max="10" placeholder="1-10">
                             </div>
                             <div class="bg-[#1a1a1a] p-4 rounded-lg">
-                                <p class="text-xs text-gray-400 mb-1">응답 품질</p>
-                                <p id="modal-responseQuality" class="text-2xl font-bold text-[#cc785c]">-</p>
+                                <p class="text-xs text-gray-400 mb-2">응답 품질 (1-10점)</p>
+                                <input type="number" id="edit-responseQuality" class="w-full px-3 py-2 bg-[#2d2d2d] border border-[#404040] rounded-md text-white" min="1" max="10" placeholder="1-10">
                             </div>
                             <div class="bg-[#1a1a1a] p-4 rounded-lg">
-                                <p class="text-xs text-gray-400 mb-1">효율성</p>
-                                <p id="modal-efficiency" class="text-2xl font-bold text-[#cc785c]">-</p>
+                                <p class="text-xs text-gray-400 mb-2">효율성 (1-10점)</p>
+                                <input type="number" id="edit-efficiency" class="w-full px-3 py-2 bg-[#2d2d2d] border border-[#404040] rounded-md text-white" min="1" max="10" placeholder="1-10">
                             </div>
                             <div class="bg-[#1a1a1a] p-4 rounded-lg">
-                                <p class="text-xs text-gray-400 mb-1">재사용 가능성</p>
-                                <p id="modal-reusability" class="text-2xl font-bold text-[#cc785c]">-</p>
+                                <p class="text-xs text-gray-400 mb-2">재사용 가능성 (1-10점)</p>
+                                <input type="number" id="edit-reusability" class="w-full px-3 py-2 bg-[#2d2d2d] border border-[#404040] rounded-md text-white" min="1" max="10" placeholder="1-10">
                             </div>
                             <div class="bg-[#1a1a1a] p-4 rounded-lg">
-                                <p class="text-xs text-gray-400 mb-1">실행 성공 여부</p>
-                                <p id="modal-executionSuccess" class="text-2xl font-bold">-</p>
+                                <p class="text-xs text-gray-400 mb-2">실행 성공 여부</p>
+                                <select id="edit-executionSuccess" class="w-full px-3 py-2 bg-[#2d2d2d] border border-[#404040] rounded-md text-white">
+                                    <option value="">선택 안 함</option>
+                                    <option value="true">성공</option>
+                                    <option value="false">실패</option>
+                                </select>
                             </div>
                             <div class="bg-[#1a1a1a] p-4 rounded-lg">
-                                <p class="text-xs text-gray-400 mb-1">종합 만족도</p>
-                                <p id="modal-overallSatisfaction" class="text-2xl font-bold text-green-400">-</p>
+                                <p class="text-xs text-gray-400 mb-2">종합 만족도 (1-10점)</p>
+                                <input type="number" id="edit-overallSatisfaction" class="w-full px-3 py-2 bg-[#2d2d2d] border border-[#404040] rounded-md text-white" min="1" max="10" placeholder="1-10">
                             </div>
                         </div>
                     </div>
 
                     <!-- 코멘트 -->
-                    <div id="modal-comment-section" class="hidden">
+                    <div id="modal-comment-section">
                         <span class="text-sm text-gray-400">코멘트</span>
-                        <div id="modal-comment" class="mt-2 p-4 bg-[#1a1a1a] rounded-lg whitespace-pre-wrap"></div>
+                        <textarea id="edit-comment" class="mt-2 w-full px-4 py-3 bg-[#1a1a1a] border border-[#404040] rounded-lg text-white" rows="4" placeholder="자유 코멘트를 입력하세요"></textarea>
                     </div>
                 </div>
 
                 <!-- 모달 푸터 -->
-                <div class="mt-8 flex justify-end">
-                    <button onclick="closeModal()" class="px-6 py-2 bg-[#404040] text-white rounded-md hover:bg-[#4a4a4a] transition">
-                        닫기
+                <div class="mt-8 flex justify-between">
+                    <button onclick="deletePromptFromModal()" class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
+                        삭제
                     </button>
+                    <div class="flex space-x-3">
+                        <button onclick="closeModal()" class="px-6 py-2 bg-[#404040] text-white rounded-md hover:bg-[#4a4a4a] transition">
+                            닫기
+                        </button>
+                        <button onclick="savePrompt()" class="px-6 py-2 bg-[#cc785c] text-white rounded-md hover:bg-[#b86b4f] transition">
+                            저장
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -377,11 +398,15 @@
             }
         }
 
+        // 현재 편집 중인 프롬프트 ID 저장
+        let currentPromptId = null;
+
         // 모달 열기
         function openModal(button) {
             const dataset = button.dataset;
+            currentPromptId = dataset.id;
 
-            // 기본 정보
+            // 기본 정보 (읽기 전용)
             document.getElementById('modal-id').textContent = dataset.id || '-';
             document.getElementById('modal-category').textContent = dataset.category || '-';
             document.getElementById('modal-project').textContent = dataset.project || '-';
@@ -389,55 +414,163 @@
             document.getElementById('modal-createdAt').textContent = dataset.createdAt || '-';
             document.getElementById('modal-content').textContent = dataset.content || '';
 
-            // AI 응답
-            if (dataset.responseText && dataset.responseText !== 'null') {
-                document.getElementById('modal-response-section').classList.remove('hidden');
-                document.getElementById('modal-responseText').textContent = dataset.responseText;
-            } else {
-                document.getElementById('modal-response-section').classList.add('hidden');
-            }
-
-            // 평가 점수 - 값이 있는지 체크하는 헬퍼 함수
+            // 값이 있는지 체크하는 헬퍼 함수
             const hasValue = (value) => value && value !== 'null' && value !== 'undefined';
 
-            const hasScores = hasValue(dataset.goalAchievement) || hasValue(dataset.responseQuality) ||
-                             hasValue(dataset.efficiency) || hasValue(dataset.reusability) ||
-                             hasValue(dataset.executionSuccess) || hasValue(dataset.overallSatisfaction);
+            // AI 응답 입력 필드
+            const responseText = hasValue(dataset.responseText) ? dataset.responseText : '';
+            document.getElementById('edit-responseText').value = responseText;
 
-            if (hasScores) {
-                document.getElementById('modal-scores-section').classList.remove('hidden');
-                document.getElementById('modal-goalAchievement').textContent =
-                    hasValue(dataset.goalAchievement) ? dataset.goalAchievement + '/10' : '';
-                document.getElementById('modal-responseQuality').textContent =
-                    hasValue(dataset.responseQuality) ? dataset.responseQuality + '/10' : '';
-                document.getElementById('modal-efficiency').textContent =
-                    hasValue(dataset.efficiency) ? dataset.efficiency + '/10' : '';
-                document.getElementById('modal-reusability').textContent =
-                    hasValue(dataset.reusability) ? dataset.reusability + '/10' : '';
-                document.getElementById('modal-executionSuccess').textContent =
-                    hasValue(dataset.executionSuccess) ? (dataset.executionSuccess === 'true' ? '✓ 성공' : '✗ 실패') : '';
-                document.getElementById('modal-overallSatisfaction').textContent =
-                    hasValue(dataset.overallSatisfaction) ? dataset.overallSatisfaction + '/10' : '';
-            } else {
-                document.getElementById('modal-scores-section').classList.add('hidden');
-            }
+            // 평가 점수 입력 필드들
+            const goalAchievement = hasValue(dataset.goalAchievement) ? dataset.goalAchievement : '';
+            document.getElementById('edit-goalAchievement').value = goalAchievement;
 
-            // 코멘트
-            if (dataset.comment && dataset.comment !== 'null') {
-                document.getElementById('modal-comment-section').classList.remove('hidden');
-                document.getElementById('modal-comment').textContent = dataset.comment;
-            } else {
-                document.getElementById('modal-comment-section').classList.add('hidden');
-            }
+            const responseQuality = hasValue(dataset.responseQuality) ? dataset.responseQuality : '';
+            document.getElementById('edit-responseQuality').value = responseQuality;
+
+            const efficiency = hasValue(dataset.efficiency) ? dataset.efficiency : '';
+            document.getElementById('edit-efficiency').value = efficiency;
+
+            const reusability = hasValue(dataset.reusability) ? dataset.reusability : '';
+            document.getElementById('edit-reusability').value = reusability;
+
+            const executionSuccess = hasValue(dataset.executionSuccess) ? dataset.executionSuccess : '';
+            document.getElementById('edit-executionSuccess').value = executionSuccess;
+
+            const overallSatisfaction = hasValue(dataset.overallSatisfaction) ? dataset.overallSatisfaction : '';
+            document.getElementById('edit-overallSatisfaction').value = overallSatisfaction;
+
+            // 코멘트 입력 필드
+            const comment = hasValue(dataset.comment) ? dataset.comment : '';
+            document.getElementById('edit-comment').value = comment;
 
             // 모달 표시
             document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        // 프롬프트 저장
+        async function savePrompt() {
+            if (!currentPromptId) {
+                alert('프롬프트 ID를 찾을 수 없습니다.');
+                return;
+            }
+
+            // 입력 값 검증 (1-10 범위)
+            const validateScore = (value) => {
+                if (value === '' || value === null) return null;
+                const num = parseInt(value);
+                if (num < 1 || num > 10) {
+                    return false;
+                }
+                return num;
+            };
+
+            const goalAchievement = validateScore(document.getElementById('edit-goalAchievement').value);
+            const responseQuality = validateScore(document.getElementById('edit-responseQuality').value);
+            const efficiency = validateScore(document.getElementById('edit-efficiency').value);
+            const reusability = validateScore(document.getElementById('edit-reusability').value);
+            const overallSatisfaction = validateScore(document.getElementById('edit-overallSatisfaction').value);
+
+            // 범위 검증
+            if (goalAchievement === false || responseQuality === false || efficiency === false ||
+                reusability === false || overallSatisfaction === false) {
+                alert('점수는 1-10 사이의 값이어야 합니다.');
+                return;
+            }
+
+            const executionSuccessValue = document.getElementById('edit-executionSuccess').value;
+            const executionSuccess = executionSuccessValue === '' ? null : (executionSuccessValue === 'true');
+
+            const requestBody = {
+                responseText: document.getElementById('edit-responseText').value || null,
+                comment: document.getElementById('edit-comment').value || null,
+                goalAchievement: goalAchievement,
+                executionSuccess: executionSuccess,
+                responseQuality: responseQuality,
+                efficiency: efficiency,
+                reusability: reusability,
+                overallSatisfaction: overallSatisfaction
+            };
+
+            try {
+                const response = await fetch(`/api/prompts/${currentPromptId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (response.ok) {
+                    alert('저장되었습니다.');
+                    closeModal();
+                    // 페이지 새로고침
+                    location.reload();
+                } else {
+                    const error = await response.text();
+                    alert('저장 중 오류가 발생했습니다: ' + error);
+                }
+            } catch (error) {
+                alert('저장 중 오류가 발생했습니다: ' + error.message);
+            }
         }
 
         // 모달 닫기
         function closeModal(event) {
             if (!event || event.target === event.currentTarget) {
                 document.getElementById('detailModal').classList.add('hidden');
+            }
+        }
+
+        // 프롬프트 삭제 (테이블에서)
+        async function deletePrompt(id) {
+            if (!confirm('정말로 이 프롬프트를 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/prompts/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('삭제되었습니다.');
+                    location.reload();
+                } else {
+                    const error = await response.text();
+                    alert('삭제 중 오류가 발생했습니다: ' + error);
+                }
+            } catch (error) {
+                alert('삭제 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 프롬프트 삭제 (모달에서)
+        async function deletePromptFromModal() {
+            if (!currentPromptId) {
+                alert('프롬프트 ID를 찾을 수 없습니다.');
+                return;
+            }
+
+            if (!confirm('정말로 이 프롬프트를 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/prompts/${currentPromptId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('삭제되었습니다.');
+                    closeModal();
+                    location.reload();
+                } else {
+                    const error = await response.text();
+                    alert('삭제 중 오류가 발생했습니다: ' + error);
+                }
+            } catch (error) {
+                alert('삭제 중 오류가 발생했습니다: ' + error.message);
             }
         }
 

@@ -176,18 +176,23 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <span th:if="${prompt.category}"
-                                      class="px-2 py-1 text-xs rounded-full bg-[#cc785c] bg-opacity-20 text-[#cc785c]"
-                                      th:text="${prompt.categoryDescription}">
-                                </span>
+                                <select th:attr="onchange='updateCategory(' + ${prompt.id} + ', this.value)'"
+                                        class="px-2 py-1 text-xs rounded bg-[#1a1a1a] border border-[#404040] text-[#cc785c] focus:outline-none focus:border-[#cc785c] cursor-pointer">
+                                    <option value="">선택 안 함</option>
+                                    <option th:each="cat : ${categories}"
+                                            th:value="${cat}"
+                                            th:text="${cat.description}"
+                                            th:selected="${prompt.category == cat}">
+                                    </option>
+                                </select>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <span th:if="${prompt.overallSatisfaction != null}"
-                                      class="font-semibold"
-                                      th:classappend="${prompt.overallSatisfaction >= 7} ? 'text-green-400' : (${prompt.overallSatisfaction >= 4} ? 'text-yellow-400' : 'text-red-400')"
-                                      th:text="${prompt.overallSatisfaction} + '/10'">
-                                </span>
-                                <span th:if="${prompt.overallSatisfaction == null}" class="text-gray-500">-</span>
+                                <input type="number"
+                                       th:value="${prompt.overallSatisfaction}"
+                                       th:attr="onchange='updateSatisfaction(' + ${prompt.id} + ', this.value)'"
+                                       min="1" max="10"
+                                       placeholder="-"
+                                       class="w-16 px-2 py-1 text-center bg-[#1a1a1a] border border-[#404040] rounded text-white focus:outline-none focus:border-[#cc785c]">
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400"
                                 th:text="${#temporals.format(prompt.createdAt, 'yyyy-MM-dd HH:mm')}">
@@ -198,6 +203,7 @@
                                             th:attr="data-id=${prompt.id},
                                                      data-content=${prompt.content},
                                                      data-category=${prompt.categoryDescription},
+                                                     data-category-enum=${prompt.category},
                                                      data-project=${prompt.project},
                                                      data-ai-model=${prompt.aiModel},
                                                      data-created-at=${#temporals.format(prompt.createdAt, 'yyyy-MM-dd HH:mm')},
@@ -292,8 +298,14 @@
                             <p id="modal-id" class="text-lg font-semibold"></p>
                         </div>
                         <div>
-                            <span class="text-sm text-gray-400">카테고리</span>
-                            <p id="modal-category" class="text-lg"></p>
+                            <span class="text-sm text-gray-400 block mb-2">카테고리</span>
+                            <select id="edit-category" class="w-full px-3 py-2 bg-[#2d2d2d] border border-[#404040] rounded-md text-white focus:outline-none focus:border-[#cc785c]">
+                                <option value="">선택 안 함</option>
+                                <option th:each="cat : ${categories}"
+                                        th:value="${cat}"
+                                        th:text="${cat.description}">
+                                </option>
+                            </select>
                         </div>
                         <div>
                             <span class="text-sm text-gray-400">프로젝트</span>
@@ -398,6 +410,73 @@
             }
         }
 
+        // 카테고리 업데이트
+        async function updateCategory(id, category) {
+            const requestBody = {
+                category: category === '' ? null : category
+            };
+
+            try {
+                const response = await fetch(`/api/prompts/${id}/category`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (response.ok) {
+                    // 성공 시 페이지 새로고침 없이 조용히 업데이트
+                    console.log('카테고리가 업데이트되었습니다.');
+                } else {
+                    const error = await response.text();
+                    alert('카테고리 업데이트 중 오류가 발생했습니다: ' + error);
+                    location.reload(); // 실패 시 롤백을 위한 새로고침
+                }
+            } catch (error) {
+                alert('카테고리 업데이트 중 오류가 발생했습니다: ' + error.message);
+                location.reload();
+            }
+        }
+
+        // 만족도 업데이트
+        async function updateSatisfaction(id, satisfaction) {
+            const satisfactionValue = satisfaction === '' ? null : parseInt(satisfaction);
+
+            // 유효성 검사
+            if (satisfactionValue !== null && (satisfactionValue < 1 || satisfactionValue > 10)) {
+                alert('만족도는 1-10 사이의 값이어야 합니다.');
+                location.reload();
+                return;
+            }
+
+            const requestBody = {
+                overallSatisfaction: satisfactionValue
+            };
+
+            try {
+                const response = await fetch(`/api/prompts/${id}/satisfaction`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (response.ok) {
+                    // 성공 시 페이지 새로고침 없이 조용히 업데이트
+                    console.log('만족도가 업데이트되었습니다.');
+                } else {
+                    const error = await response.text();
+                    alert('만족도 업데이트 중 오류가 발생했습니다: ' + error);
+                    location.reload();
+                }
+            } catch (error) {
+                alert('만족도 업데이트 중 오류가 발생했습니다: ' + error.message);
+                location.reload();
+            }
+        }
+
         // 현재 편집 중인 프롬프트 ID 저장
         let currentPromptId = null;
 
@@ -408,11 +487,14 @@
 
             // 기본 정보 (읽기 전용)
             document.getElementById('modal-id').textContent = dataset.id || '-';
-            document.getElementById('modal-category').textContent = dataset.category || '-';
             document.getElementById('modal-project').textContent = dataset.project || '-';
             document.getElementById('modal-aiModel').textContent = dataset.aiModel || '-';
             document.getElementById('modal-createdAt').textContent = dataset.createdAt || '-';
             document.getElementById('modal-content').textContent = dataset.content || '';
+
+            // 카테고리 선택 (편집 가능)
+            const categoryEnum = dataset.categoryEnum || '';
+            document.getElementById('edit-category').value = categoryEnum;
 
             // 값이 있는지 체크하는 헬퍼 함수
             const hasValue = (value) => value && value !== 'null' && value !== 'undefined';
@@ -481,7 +563,11 @@
             const executionSuccessValue = document.getElementById('edit-executionSuccess').value;
             const executionSuccess = executionSuccessValue === '' ? null : (executionSuccessValue === 'true');
 
+            const categoryValue = document.getElementById('edit-category').value;
+            const category = categoryValue === '' ? null : categoryValue;
+
             const requestBody = {
+                category: category,
                 responseText: document.getElementById('edit-responseText').value || null,
                 comment: document.getElementById('edit-comment').value || null,
                 goalAchievement: goalAchievement,

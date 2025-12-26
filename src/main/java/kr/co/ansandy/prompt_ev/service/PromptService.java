@@ -92,6 +92,42 @@ public class PromptService {
     }
 
     /**
+     * 프롬프트 카테고리만 업데이트
+     *
+     * @param id 프롬프트 ID
+     * @param category 새로운 카테고리
+     * @return 업데이트된 프롬프트 DTO
+     */
+    @Transactional
+    public PromptResponse updateCategory(Long id, kr.co.ansandy.prompt_ev.entity.PromptCategory category) {
+        Prompt prompt = promptRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("프롬프트를 찾을 수 없습니다. ID: " + id));
+
+        prompt.updateCategory(category);
+        return new PromptResponse(prompt);
+    }
+
+    /**
+     * 프롬프트 종합 만족도만 업데이트
+     *
+     * @param id 프롬프트 ID
+     * @param overallSatisfaction 새로운 종합 만족도 (1-10)
+     * @return 업데이트된 프롬프트 DTO
+     */
+    @Transactional
+    public PromptResponse updateSatisfaction(Long id, Integer overallSatisfaction) {
+        Prompt prompt = promptRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("프롬프트를 찾을 수 없습니다. ID: " + id));
+
+        if (overallSatisfaction != null && (overallSatisfaction < 1 || overallSatisfaction > 10)) {
+            throw new IllegalArgumentException("만족도는 1-10 사이의 값이어야 합니다.");
+        }
+
+        prompt.updateSatisfaction(overallSatisfaction);
+        return new PromptResponse(prompt);
+    }
+
+    /**
      * 필터 조건에 따른 Specification 생성
      */
     private Specification<Prompt> createSpecification(PromptFilterRequest filterRequest) {

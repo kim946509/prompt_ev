@@ -34,4 +34,18 @@ public class PromptController {
         promptService.deletePrompt(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/category")
+    public ResponseEntity<PromptResponse> updateCategory(
+            @PathVariable Long id,
+            @RequestBody PromptUpdateRequest request) {
+        return ResponseEntity.ok(promptService.updateCategory(id, request.getCategory()));
+    }
+
+    @PatchMapping("/{id}/satisfaction")
+    public ResponseEntity<PromptResponse> updateSatisfaction(
+            @PathVariable Long id,
+            @RequestBody PromptUpdateRequest request) {
+        return ResponseEntity.ok(promptService.updateSatisfaction(id, request.getOverallSatisfaction()));
+    }
 }

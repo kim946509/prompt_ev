@@ -69,4 +69,31 @@ public class Prompt extends BaseEntity {
         this.evaluationScore = evaluationScore;
     }
 
+    /**
+     * 카테고리만 업데이트합니다.
+     */
+    public void updateCategory(PromptCategory category) {
+        this.category = category;
+    }
+
+    /**
+     * 종합 만족도만 업데이트합니다.
+     */
+    public void updateSatisfaction(Integer overallSatisfaction) {
+        if (this.evaluationScore == null) {
+            this.evaluationScore = EvaluationScore.builder()
+                    .overallSatisfaction(overallSatisfaction)
+                    .build();
+        } else {
+            this.evaluationScore = EvaluationScore.builder()
+                    .goalAchievement(this.evaluationScore.getGoalAchievement())
+                    .executionSuccess(this.evaluationScore.getExecutionSuccess())
+                    .responseQuality(this.evaluationScore.getResponseQuality())
+                    .efficiency(this.evaluationScore.getEfficiency())
+                    .reusability(this.evaluationScore.getReusability())
+                    .overallSatisfaction(overallSatisfaction)
+                    .build();
+        }
+    }
+
 }

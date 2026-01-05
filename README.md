@@ -15,10 +15,10 @@ AI 프롬프트를 체계적으로 평가하고 개선하기 위한 자기주도
 
 ### 지원 플랫폼
 
-| 플랫폼 | 상태 | 비고 |
-|--------|------|------|
-| **Claude Code** | ✅ 지원 | Webhook을 통한 자동 프롬프트 저장 |
-| **Cursor** | 🔜 예정 | 향후 업데이트 예정 |
+| 플랫폼          | 상태 | 비고                              |
+| --------------- | ---- | --------------------------------- |
+| **Claude Code** | 지원 | Webhook을 통한 자동 프롬프트 저장 |
+| **Cursor**      | 예정 | 향후 업데이트 예정                |
 
 ## 시작하기
 
@@ -27,12 +27,14 @@ AI 프롬프트를 체계적으로 평가하고 개선하기 위한 자기주도
 다음 소프트웨어가 설치되어 있어야 합니다:
 
 #### 1. Docker 사용 시 (권장)
+
 - **Docker**: 20.10 이상
 - **Docker Compose**: v2.0 이상
 
 #### 2. 로컬 실행 시
+
 - **Java**: JDK 21 이상
-- **Python**: 3.7 이상 (Claude Code Hook 사용 시)
+- **Python**: 3 이상 (Claude Code Hook 사용 시)
 
 ### 설치 방법
 
@@ -136,14 +138,14 @@ PROJECT_NAME = "your-project-name"  # 여기를 변경하세요!
 
 #### 카테고리 분류 규칙
 
-| 카테고리 | 키워드 예시 |
-|----------|------------|
-| **BUG_FIX** | 버그, bug, fix, 오류, error, crash |
-| **TEST** | 테스트, test, unit test, mock, assert |
-| **REFACTORING** | 리팩토링, refactor, 개선, optimize, cleanup |
-| **FEATURE** | 기능, feature, add, create, implement |
-| **DOCUMENTATION** | 문서, docs, readme, 주석, docstring |
-| **ETC** | 위 키워드에 해당하지 않는 경우 |
+| 카테고리          | 키워드 예시                                 |
+| ----------------- | ------------------------------------------- |
+| **BUG_FIX**       | 버그, bug, fix, 오류, error, crash          |
+| **TEST**          | 테스트, test, unit test, mock, assert       |
+| **REFACTORING**   | 리팩토링, refactor, 개선, optimize, cleanup |
+| **FEATURE**       | 기능, feature, add, create, implement       |
+| **DOCUMENTATION** | 문서, docs, readme, 주석, docstring         |
+| **ETC**           | 위 키워드에 해당하지 않는 경우              |
 
 우선순위: BUG_FIX > TEST > REFACTORING > FEATURE > DOCUMENTATION > ETC
 
@@ -152,6 +154,7 @@ PROJECT_NAME = "your-project-name"  # 여기를 변경하세요!
 ### 웹 UI
 
 프롬프트 목록 조회 및 필터링:
+
 - URL: `http://localhost:18080/prompts`
 - 카테고리별 필터링
 - 프로젝트별 필터링
@@ -253,16 +256,19 @@ docker logs -f prompt-evaluation
 ### Hook이 동작하지 않을 때
 
 1. Prompt Evaluation System이 실행 중인지 확인
+
    ```bash
    curl http://localhost:18080/
    ```
 
 2. Python이 설치되어 있는지 확인
+
    ```bash
    python --version
    ```
 
 3. Hook 스크립트 경로가 올바른지 확인
+
    ```bash
    ls -la .claude/hooks/save-prompt.py
    ```
@@ -300,16 +306,19 @@ docker-compose build --no-cache
 ## 향후 계획 (Roadmap)
 
 ### Phase 2: AI 분석 통합
+
 - OpenAI/Anthropic API 연동
 - AI 기반 프롬프트 품질 분석
 - 개선 제안 기능
 
 ### Phase 3: 통계 대시보드
+
 - 카테고리별 프롬프트 사용 통계
 - 시간대별 분석
 - 프로젝트별 인사이트
 
 ### Phase 4: 고급 기능
+
 - 프롬프트 템플릿
 - 버전 관리
 - 고급 검색 및 필터링

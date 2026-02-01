@@ -214,7 +214,8 @@
                                                      data-efficiency=${prompt.efficiency},
                                                      data-reusability=${prompt.reusability},
                                                      data-overall-satisfaction=${prompt.overallSatisfaction},
-                                                     data-comment=${prompt.comment}"
+                                                     data-comment=${prompt.comment},
+                                                     data-ai-analysis=${prompt.aiAnalysis}"
                                             class="text-[#cc785c] hover:text-[#b86b4f] transition"
                                             title="상세보기">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,6 +366,14 @@
                                 <p class="text-xs text-gray-400 mb-2">종합 만족도 (1-10점)</p>
                                 <input type="number" id="edit-overallSatisfaction" class="w-full px-3 py-2 bg-[#2d2d2d] border border-[#404040] rounded-md text-white" min="1" max="10" placeholder="1-10">
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- AI 분석 결과 -->
+                    <div id="modal-ai-analysis-section">
+                        <span class="text-sm text-gray-400">AI 분석 결과</span>
+                        <div id="modal-ai-analysis" class="mt-2 p-4 bg-[#1a1a1a] rounded-lg whitespace-pre-wrap text-sm">
+                            <span class="text-gray-500">분석 중...</span>
                         </div>
                     </div>
 
@@ -525,6 +534,16 @@
             // 코멘트 입력 필드
             const comment = hasValue(dataset.comment) ? dataset.comment : '';
             document.getElementById('edit-comment').value = comment;
+
+            // AI 분석 결과 표시
+            const aiAnalysis = hasValue(dataset.aiAnalysis) ? dataset.aiAnalysis : null;
+            const aiAnalysisEl = document.getElementById('modal-ai-analysis');
+            if (aiAnalysis) {
+                aiAnalysisEl.innerHTML = aiAnalysis.replace(/\n/g, '<br>');
+                aiAnalysisEl.classList.remove('text-gray-500');
+            } else {
+                aiAnalysisEl.innerHTML = '<span class="text-gray-500">분석 중...</span>';
+            }
 
             // 모달 표시
             document.getElementById('detailModal').classList.remove('hidden');

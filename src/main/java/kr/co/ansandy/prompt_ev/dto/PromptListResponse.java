@@ -29,6 +29,9 @@ public class PromptListResponse {
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
+    /** AI 분석 결과 */
+    private final String aiAnalysis;
+
     public PromptListResponse(Prompt prompt) {
         this.id = prompt.getId();
         this.content = prompt.getContent();  // 전체 내용
@@ -58,6 +61,7 @@ public class PromptListResponse {
         this.comment = prompt.getComment();
         this.createdAt = prompt.getCreatedAt();
         this.updatedAt = prompt.getUpdatedAt();
+        this.aiAnalysis = prompt.getAiAnalysis();
     }
 
     /**

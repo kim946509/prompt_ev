@@ -7,8 +7,10 @@ import kr.co.ansandy.prompt_ev.dto.PromptListResponse;
 import kr.co.ansandy.prompt_ev.dto.PromptResponse;
 import kr.co.ansandy.prompt_ev.dto.PromptUpdateRequest;
 import kr.co.ansandy.prompt_ev.entity.Prompt;
+import kr.co.ansandy.prompt_ev.event.PromptSavedEvent;
 import kr.co.ansandy.prompt_ev.repository.PromptRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,11 +28,17 @@ import java.util.List;
 public class PromptService {
 
     private final PromptRepository promptRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public PromptResponse savePrompt(PromptCreateRequest request) {
         Prompt prompt = Prompt.from(request);
         promptRepository.save(prompt);
+
+        // 트랜잭션 커밋 후 비동기 분석을 위해 이벤트 발행
+        // @TransactionalEventListener(phase = AFTER_COMMIT)가 처리
+        eventPublisher.publishEvent(new PromptSavedEvent(prompt.getId(), prompt.getContent()));
+
         return new PromptResponse(prompt);
     }
 

@@ -49,6 +49,10 @@ public class Prompt extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String comment;
 
+    /** AI 분석 결과 (Gemini에 의해 생성) */
+    @Column(name = "ai_analysis", columnDefinition = "TEXT")
+    private String aiAnalysis;
+
     public static Prompt from(PromptCreateRequest request){
         return Prompt.builder()
                 .content(request.getContent())
@@ -94,6 +98,13 @@ public class Prompt extends BaseEntity {
                     .overallSatisfaction(overallSatisfaction)
                     .build();
         }
+    }
+
+    /**
+     * AI 분석 결과를 업데이트합니다.
+     */
+    public void updateAiAnalysis(String aiAnalysis) {
+        this.aiAnalysis = aiAnalysis;
     }
 
 }
